@@ -40,7 +40,11 @@ ORDER BY benchmark_gap DESC;
 -- 4. Input efficiency by farm
 SELECT
     f.farm_name,
-    ROUND(AVG(p.yield_per_acre / p.fertilizer_kg_per_acre), 3) AS yield_per_kg_fertilizer
+    ROUND(AVG(CASE 
+    WHEN p.fertilizer_kg_per_acre > 0 
+    THEN p.yield_per_acre / p.fertilizer_kg_per_acre 
+    ELSE NULL 
+END), 3) AS yield_per_kg_fertilizer
 FROM corn_production p
 JOIN farms f ON p.farm_id = f.farm_id
 GROUP BY f.farm_name
@@ -54,7 +58,7 @@ SELECT
     ROUND(AVG(p.yield_per_acre) - b.us_corn_yield_bu_per_acre, 1) AS project_gap
 FROM corn_production p
 JOIN usda_corn_benchmark b ON p.year = b.year
-GROUP BY p.year, b.us_corn_yield_bu_per_acre
+GROUP BY p.year
 ORDER BY p.year;
 
 -- 6. Flag farm-years that materially underperform or outperform the benchmark
